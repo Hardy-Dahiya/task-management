@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Task Manager</title>
+        <link
+            rel="stylesheet"
+            href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+        />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+        />
+        <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
+
+        <style>
+            .group {
+                margin-bottom: 30px;
+            }
+            .task-row {
+                display: flex;
+                justify-content: space-between;
+                background-color: #f8f9fa;
+                padding: 10px;
+                margin-bottom: 10px;
+                border-radius: 5px;
+                cursor: move;
+            }
+            .task-row:hover {
+                background-color: #e9ecef;
+            }
+            .completed-group {
+                display: none;
+            }
+
+            .ui-state-highlight {
+                height: 40px; /* Adjust height based on your task row */
+                background-color: #d1e7dd;
+                border: 2px dashed #4caf50;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container mt-5">
+            <h1>Task Manager</h1>
+
+            <button class="btn btn-primary mb-3" data-toggle="modal" data-target="#taskModal">
+                Add Task
+            </button>
+
+            <div class="group">
+                <h3>With Me</h3>
+                <div id="with-me-tasks" class="task-group sortable-group"></div>
+            </div>
+
+            <div class="group">
+                <h3>With Client</h3>
+                <div id="with-client-tasks" class="task-group sortable-group"></div>
+            </div>
+
+            <div class="group">
+                <h3>Queue</h3>
+                <div id="queue-tasks" class="task-group sortable-group"></div>
+            </div>
+
+            <button class="btn btn-secondary mt-3" id="show-completed">Show Completed Tasks</button>
+
+            <!-- Modal for completed tasks -->
+            <div
+                class="modal fade"
+                id="completedModal"
+                tabindex="-1"
+                aria-labelledby="completedModalLabel"
+                aria-hidden="true"
+            >
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="completedModalLabel">Completed Tasks</h5>
+                            <button
+                                type="button"
+                                class="close"
+                                data-dismiss="modal"
+                                aria-label="Close"
+                            >
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="container-fluid">
+                                <!-- Header row for the modal -->
+                                <div class="row font-weight-bold mb-2">
+                                    <div class="col-2">Task Number</div>
+                                    <div class="col-6">Task Name</div>
+                                    <div class="col-3">Completion Date</div>
+                                    <div class="col-1">Status</div>
+                                </div>
+                                <!-- List of completed tasks -->
+                                <div id="completed-tasks-list"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for adding a new task -->
+        <div
+            class="modal fade"
+            id="taskModal"
+            tabindex="-1"
+            aria-labelledby="taskModalLabel"
+            aria-hidden="true"
+        >
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="taskModalLabel">New Task</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="taskForm">
+                            <div class="form-group">
+                                <label for="taskNumber">Task Number</label>
+                                <input
+                                    type="number"
+                                    class="form-control"
+                                    id="taskNumber"
+                                    name="task_number"
+                                    required
+                                />
+                            </div>
+                            <div class="form-group">
+                                <label for="taskName">Task Name</label>
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    id="taskName"
+                                    name="task_name"
+                                    required
+                                />
+                            </div>
+                            <div class="form-group">
+                                <label for="dueDate">Due Date</label>
+                                <input
+                                    type="date"
+                                    class="form-control"
+                                    id="dueDate"
+                                    name="due_date"
+                                    required
+                                />
+                            </div>
+                            <div class="form-group">
+                                <label for="status">Status</label>
+                                <select class="form-control" id="status" name="status">
+                                    <option value="Queue">Queue</option>
+                                    <option value="With Me">With Me</option>
+                                    <option value="With Client">With Client</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Task</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Task Modal -->
+        <div
+            class="modal fade"
+            id="editTaskModal"
+            tabindex="-1"
+            aria-labelledby="editTaskModalLabel"
+            aria-hidden="true"
+        >
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editTaskModalLabel">Edit Task</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="editTaskForm">
+                            <input type="hidden" id="editTaskId" name="task_id" />
+                            <div class="form-group">
+                                <label for="editTaskNumber">Task Number</label>
+                                <input
+                                    type="number"
+                                    class="form-control"
+                                    id="editTaskNumber"
+                                    name="task_number"
+                                    required
+                                />
+                            </div>
+                            <div class="form-group">
+                                <label for="editTaskName">Task Name</label>
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    id="editTaskName"
+                                    name="task_name"
+                                    required
+                                />
+                            </div>
+                            <div class="form-group">
+                                <label for="editDueDate">Due Date</label>
+                                <input
+                                    type="date"
+                                    class="form-control"
+                                    id="editDueDate"
+                                    name="due_date"
+                                    required
+                                />
+                            </div>
+                            <div class="form-group">
+                                <label for="editStatus">Status</label>
+                                <select class="form-control" id="editStatus" name="status">
+                                    <option value="Queue">Queue</option>
+                                    <option value="With Me">With Me</option>
+                                    <option value="With Client">With Client</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update Task</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
+        <script>
+            $(document).ready(function () {
+                // Enable sortable (drag-and-drop) within and between groups
+                $(".sortable-group").sortable({
+                    connectWith: ".sortable-group",
+                    placeholder: "ui-state-highlight",
+                    tolerance: "pointer",
+                    revert: true,
+                    forcePlaceholderSize: true,
+                    start: function (event, ui) {
+                        ui.item.data("original-group", ui.item.parent().attr("id"));
+                    },
+                    receive: function (event, ui) {
+                        let taskId = ui.item.data("id");
+                        let newStatus = ui.item
+                            .parent()
+                            .attr("id")
+                            .replace("-tasks", "")
+                            .toLowerCase();
+
+                        switch (newStatus) {
+                            case "queue":
+                                newStatus = "Queue";
+                                break;
+                            case "with-me":
+                                newStatus = "With Me";
+                                break;
+                            case "with-client":
+                                newStatus = "With Client";
+                                break;
+                        }
+
+                        // Update task status using the API
+                        $.ajax({
+                            url: `http://localhost:3001/v1/task/${taskId}`,
+                            type: "PUT",
+                            contentType: "application/json",
+                            data: JSON.stringify({ status: newStatus }),
+                            success: function (response) {
+                                console.log(response);
+                                loadTasks();
+                            },
+                            error: function (xhr, status, error) {
+                                console.error("Error updating task:", error);
+                            },
+                        });
+                    },
+                });
+
+                // Fetch and display tasks
+                function loadTasks() {
+                    $.get("http://localhost:3001/v1/task/", function (data) {
+                        const tasks = data.data;
+                        $("#with-me-tasks").empty();
+                        $("#with-client-tasks").empty();
+                        $("#queue-tasks").empty();
+                        $("#completed-tasks-list").empty();
+
+                        tasks.forEach((task) => {
+                            let formattedDate = new Date(task.due_date).toLocaleDateString(
+                                "en-GB",
+                                {
+                                    weekday: "short",
+                                    day: "numeric",
+                                    month: "short",
+                                    year: "2-digit",
+                                },
+                            );
+
+                            let taskElement = `
+                  <div class="task-row" data-id="${task._id}">
+                      <div class="col-2">${task.task_number}</div>
+                      <div class="col-5">${task.task_name}</div>
+                      <div class="col-3">${formattedDate}</div>
+                      <div class="col-1">
+                          <button class="btn btn-success btn-complete" data-id="${task._id}">
+                              <i class="fa-regular fa-circle-check"></i>
+                          </button>
+                      </div>
+                      <div class="col-1">
+                          <button class="btn btn-primary btn-edit" data-id="${task._id}" data-toggle="modal" data-target="#editTaskModal">
+                              <i class="fa-solid fa-pen"></i>
+                          </button>
+                      </div>
+                  </div>`;
+
+                            // Map status to the correct group
+                            let status = task.status.toLowerCase();
+                            if (status === "with me") {
+                                $("#with-me-tasks").append(taskElement);
+                            } else if (status === "with client") {
+                                $("#with-client-tasks").append(taskElement);
+                            } else if (status === "queue") {
+                                $("#queue-tasks").append(taskElement);
+                            } else if (status === "completed") {
+                                $("#completed-tasks-list").append(taskElement);
+                            }
+                        });
+                    });
+                }
+
+                // Handle task creation
+                $("#taskForm").submit(function (e) {
+                    e.preventDefault();
+
+                    // Serialize the form data into an array of name-value pairs
+                    const formDataArray = $(this).serializeArray();
+
+                    // Convert the serialized array to an object
+                    const taskData = {};
+                    formDataArray.forEach((item) => {
+                        taskData[item.name] = item.value;
+                    });
+
+                    // Send the formatted JSON object in the request
+                    $.ajax({
+                        url: "http://localhost:3001/v1/task/",
+                        type: "POST",
+                        contentType: "application/json",
+                        data: JSON.stringify(taskData), // Send the object as a JSON string
+                        success: function () {
+                            $("#taskModal").modal("hide");
+                            loadTasks(); // Reload tasks after successful submission
+                        },
+                        error: function (err) {
+                            console.error("Error creating task:", err);
+                        },
+                    });
+                });
+
+                // Handle task editing via modal
+                $(document).on("click", ".btn-edit", function () {
+                    let taskId = $(this).data("id");
+
+                    // Fetch task details for editing
+                    $.get(`http://localhost:3001/v1/task/${taskId}`, function (response) {
+                        const task = response.data;
+                        // Populate modal form fields with task details
+                        $("#editTaskModal #editTaskId").val(task._id);
+                        $("#editTaskModal #editTaskNumber").val(task.task_number);
+                        $("#editTaskModal #editTaskName").val(task.task_name);
+                        $("#editTaskModal #editDueDate").val(task.due_date);
+                        $("#editTaskModal #editStatus").val(task.status);
+                    });
+                });
+
+                // Handle task update from the edit modal
+                $("#editTaskForm").submit(function (e) {
+                    e.preventDefault();
+
+                    const taskId = $("#editTaskModal #editTaskId").val();
+
+                    // Serialize form data into an array of name-value pairs
+                    const formDataArray = $(this).serializeArray();
+
+                    // Convert the serialized array to an object
+                    const taskData = {};
+                    formDataArray.forEach((item) => {
+                        taskData[item.name] = item.value;
+                    });
+
+                    // Send the formatted JSON object in the request
+                    $.ajax({
+                        url: `http://localhost:3001/v1/task/${taskId}`,
+                        type: "PUT",
+                        contentType: "application/json",
+                        data: JSON.stringify(taskData), // Send the object as a JSON string
+                        success: function () {
+                            $("#editTaskModal").modal("hide");
+                            loadTasks(); // Reload tasks after successful update
+                        },
+                        error: function (err) {
+                            console.error("Error updating task:", err);
+                        },
+                    });
+                });
+
+                // Handle task completion
+                $(document).on("click", ".btn-complete", function () {
+                    const taskId = $(this).data("id");
+
+                    if (confirm("Are you sure you want to mark this task as completed?")) {
+                        const currentDate = new Date().toISOString().split("T")[0];
+
+                        $.ajax({
+                            url: `http://localhost:3001/v1/task/${taskId}`,
+                            type: "PUT",
+                            contentType: "application/json",
+                            data: JSON.stringify({
+                                completed: true,
+                                due_date: currentDate,
+                                status: "Completed",
+                            }),
+                            success: function () {
+                                loadTasks();
+                            },
+                        });
+                    }
+                });
+                // Show completed tasks modal
+                $("#show-completed").click(function () {
+                    $("#completedModal").modal("show");
+                    loadTasks(); // Load only completed tasks inside the modal
+                });
+                // Load tasks when the page is ready
+                loadTasks();
+            });
+        </script>
+    </body>
+</html>

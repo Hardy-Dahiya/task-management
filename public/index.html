@@ -270,7 +270,7 @@
 
                         // Update task status using the API
                         $.ajax({
-                            url: `http://localhost:3001/v1/task/${taskId}`,
+                            url: `/v1/task/${taskId}`,
                             type: "PUT",
                             contentType: "application/json",
                             data: JSON.stringify({ status: newStatus }),
@@ -287,7 +287,7 @@
 
                 // Fetch and display tasks
                 function loadTasks() {
-                    $.get("http://localhost:3001/v1/task/", function (data) {
+                    $.get("/v1/task/", function (data) {
                         const tasks = data.data;
                         $("#with-me-tasks").empty();
                         $("#with-client-tasks").empty();
@@ -352,7 +352,7 @@
 
                     // Send the formatted JSON object in the request
                     $.ajax({
-                        url: "http://localhost:3001/v1/task/",
+                        url: "/v1/task/",
                         type: "POST",
                         contentType: "application/json",
                         data: JSON.stringify(taskData), // Send the object as a JSON string
@@ -371,7 +371,7 @@
                     let taskId = $(this).data("id");
 
                     // Fetch task details for editing
-                    $.get(`http://localhost:3001/v1/task/${taskId}`, function (response) {
+                    $.get(`/v1/task/${taskId}`, function (response) {
                         const task = response.data;
                         // Populate modal form fields with task details
                         $("#editTaskModal #editTaskId").val(task._id);
@@ -399,7 +399,7 @@
 
                     // Send the formatted JSON object in the request
                     $.ajax({
-                        url: `http://localhost:3001/v1/task/${taskId}`,
+                        url: `/v1/task/${taskId}`,
                         type: "PUT",
                         contentType: "application/json",
                         data: JSON.stringify(taskData), // Send the object as a JSON string
@@ -421,7 +421,7 @@
                         const currentDate = new Date().toISOString().split("T")[0];
 
                         $.ajax({
-                            url: `http://localhost:3001/v1/task/${taskId}`,
+                            url: `/v1/task/${taskId}`,
                             type: "PUT",
                             contentType: "application/json",
                             data: JSON.stringify({

@@ -5,7 +5,6 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 // mongodb
 const mongoDB = require("./src/db/db.connection");
-const path = require("path");
 const rootRoute = require("./route.index");
 // logger
 const { logger, apiLoggerMiddleware } = require("./logger");
@@ -31,11 +30,6 @@ app.get("/v1/healthCheck", async (req, res) => {
 });
 app.use(apiLoggerMiddleware);
 app.use("/v1", rootRoute);
-
-// page template
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "multilang.html"));
-});
 
 // Routes
 

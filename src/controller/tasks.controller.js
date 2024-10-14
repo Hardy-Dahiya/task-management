@@ -42,6 +42,34 @@ const getTasks = async (req, res) => {
     }
 };
 
+const getTodayTasks = async (req, res) => {
+    try {
+        const { completed } = req.query; // Get the completed status from query
+
+        // Get the current date (without the time) for comparison
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0); // Set the time to the start of the day (00:00:00)
+
+        const endOfDay = new Date();
+        endOfDay.setHours(23, 59, 59, 999); // Set the time to the end of the day (23:59:59)
+
+        // Build the query for today based on createdAt range
+        const query = { createdAt: { $gte: startOfDay, $lte: endOfDay } };
+
+        // If `completed` is specified, add it to the query
+        if (completed) {
+            query.completed = completed === "true"; // Convert to boolean
+        }
+
+        // Fetch tasks that match the query and sort them by creation date in descending order
+        const tasks = await Task.find(query).sort({ createdAt: -1 });
+        return res.send({ status: true, data: tasks });
+    } catch (error) {
+        logger.error(error);
+        return res.status(500).send({ status: false, message: error.message });
+    }
+};
+
 // Get a single task by ID
 const getTaskById = async (req, res) => {
     try {
@@ -111,6 +139,7 @@ const deleteTask = async (req, res) => {
 module.exports = {
     createTask,
     getTasks,
+    getTodayTasks,
     getTaskById,
     updateTask,
     deleteTask,

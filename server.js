@@ -3,6 +3,8 @@ const bodyParser = require("body-parser");
 const app = express();
 const dotenv = require("dotenv");
 const cors = require("cors");
+// path
+const path = require("path");
 // mongodb
 const mongoDB = require("./src/db/db.connection");
 const rootRoute = require("./route.index");
@@ -28,10 +30,17 @@ app.get("/v1/healthCheck", async (req, res) => {
         res.status(400).send(error);
     }
 });
+
+// logger
 app.use(apiLoggerMiddleware);
-app.use("/v1", rootRoute);
 
 // Routes
+app.use("/v1", rootRoute);
+
+app.get("/today", (req, res) => {
+    const filePath = path.join(__dirname, "/public/today.html"); // assuming the HTML file is in the same directory
+    return res.sendFile(filePath);
+});
 
 // connection to mongoDB
 mongoDB()

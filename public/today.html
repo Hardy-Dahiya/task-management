@@ -51,12 +51,40 @@
             }
         </style>
     </head>
+    <header class="p-3 bg-dark text-white">
+        <div class="container">
+            <div
+                class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start"
+            >
+                <a
+                    href="/"
+                    class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none"
+                >
+                    <svg class="bi me-2" width="40" height="32" role="img" aria-label="Bootstrap">
+                        <use xlink:href="#bootstrap"></use>
+                    </svg>
+                </a>
+
+                <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
+                    <li>
+                        <a href="/" class="nav-link px-2 nav-link px-2 text-secondary"
+                            ><i class="fa-solid fa-list-check"></i> Dashboard</a
+                        >
+                    </li>
+                    <li>
+                        <a href="/today" class="nav-link px-2 text-white"
+                            ><i class="fa-solid fa-sun"></i> Today</a
+                        >
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </header>
     <body>
         <div class="container mt-5">
-            <h1>Today’s Tasks and To-dos</h1>
-            <h1>Todo Manager</h1>
+            <h2>Todo Manager</h2>
             <!-- Button to add mini to-dos -->
-            <button class="btn btn-primary" data-toggle="modal" data-target="#todoModal">
+            <button class="btn btn-dark mb-3" data-toggle="modal" data-target="#todoModal">
                 Add To-do
             </button>
             <!-- To-do and Task Section -->
@@ -67,7 +95,7 @@
 
             <!-- Done Section -->
             <div class="group">
-                <h3>Done</h3>
+                <h3>Completed</h3>
                 <div id="done-tasks" class="task-group sortable-group-todo"></div>
             </div>
 
@@ -104,206 +132,9 @@
                                         required
                                     />
                                 </div>
-                                <button type="submit" class="btn btn-primary">Add To-do</button>
+                                <button type="submit" class="btn btn-dark">Add To-do</button>
                             </form>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="container mt-5">
-            <h1>Task Manager</h1>
-
-            <button class="btn btn-primary mb-3" data-toggle="modal" data-target="#taskModal">
-                Add Task
-            </button>
-
-            <div class="group">
-                <h3>With Me</h3>
-                <div id="with-me-tasks" class="task-group sortable-group"></div>
-            </div>
-
-            <div class="group">
-                <h3>With Client</h3>
-                <div id="with-client-tasks" class="task-group sortable-group"></div>
-            </div>
-
-            <div class="group">
-                <h3>Queue</h3>
-                <div id="queue-tasks" class="task-group sortable-group"></div>
-            </div>
-
-            <button class="btn btn-secondary mt-3" id="show-completed">Show Completed Tasks</button>
-
-            <!-- Modal for completed tasks -->
-            <div
-                class="modal fade"
-                id="completedModal"
-                tabindex="-1"
-                aria-labelledby="completedModalLabel"
-                aria-hidden="true"
-            >
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="completedModalLabel">Completed Tasks</h5>
-                            <button
-                                type="button"
-                                class="close"
-                                data-dismiss="modal"
-                                aria-label="Close"
-                            >
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="container-fluid">
-                                <!-- Header row for the modal -->
-                                <div class="row font-weight-bold mb-2">
-                                    <div class="col-2">Task Number</div>
-                                    <div class="col-6">Task Name</div>
-                                    <div class="col-3">Completion Date</div>
-                                    <div class="col-1">Status</div>
-                                </div>
-                                <!-- List of completed tasks -->
-                                <div id="completed-tasks-list"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal for adding a new task -->
-        <div
-            class="modal fade"
-            id="taskModal"
-            tabindex="-1"
-            aria-labelledby="taskModalLabel"
-            aria-hidden="true"
-        >
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="taskModalLabel">New Task</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="taskForm">
-                            <div class="form-group">
-                                <label for="taskNumber">Task Number</label>
-                                <input
-                                    type="number"
-                                    class="form-control"
-                                    id="taskNumber"
-                                    name="task_number"
-                                    required
-                                />
-                            </div>
-                            <div class="form-group">
-                                <label for="taskName">Task Name</label>
-                                <input
-                                    type="text"
-                                    class="form-control"
-                                    id="taskName"
-                                    name="task_name"
-                                    required
-                                />
-                            </div>
-                            <div class="form-group">
-                                <label for="dueDate">Due Date</label>
-                                <input
-                                    type="date"
-                                    class="form-control"
-                                    id="dueDate"
-                                    name="due_date"
-                                    required
-                                />
-                            </div>
-                            <div class="form-group">
-                                <label for="status">Status</label>
-                                <select class="form-control" id="status" name="status">
-                                    <option value="Queue">Queue</option>
-                                    <option value="With Me">With Me</option>
-                                    <option value="With Client">With Client</option>
-                                </select>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Add Task</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Edit Task Modal -->
-        <div
-            class="modal fade"
-            id="editTaskModal"
-            tabindex="-1"
-            aria-labelledby="editTaskModalLabel"
-            aria-hidden="true"
-        >
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="editTaskModalLabel">Edit Task</h5>
-                        <button
-                            type="button"
-                            class="close"
-                            data-dismiss="modal"
-                            aria-label="Close"
-                            data-target="#editTaskModal"
-                        >
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="editTaskForm">
-                            <input type="hidden" id="editTaskId" name="task_id" />
-                            <div class="form-group">
-                                <label for="editTaskNumber">Task Number</label>
-                                <input
-                                    type="number"
-                                    class="form-control"
-                                    id="editTaskNumber"
-                                    name="task_number"
-                                    required
-                                />
-                            </div>
-                            <div class="form-group">
-                                <label for="editTaskName">Task Name</label>
-                                <input
-                                    type="text"
-                                    class="form-control"
-                                    id="editTaskName"
-                                    name="task_name"
-                                    required
-                                />
-                            </div>
-                            <div class="form-group">
-                                <label for="editDueDate">Due Date</label>
-                                <input
-                                    type="date"
-                                    class="form-control"
-                                    id="editDueDate"
-                                    name="due_date"
-                                    required
-                                />
-                            </div>
-                            <div class="form-group">
-                                <label for="editStatus">Status</label>
-                                <select class="form-control" id="editStatus" name="status">
-                                    <option value="Queue">Queue</option>
-                                    <option value="With Me">With Me</option>
-                                    <option value="With Client">With Client</option>
-                                </select>
-                            </div>
-                            <button type="submit" class="btn btn-primary" id="task-edit">
-                                Update Task
-                            </button>
-                        </form>
                     </div>
                 </div>
             </div>
@@ -359,6 +190,9 @@
                 </div>
             </div>
         </div>
+        <footer class="py-3 my-4">
+            <p class="text-center text-muted">© 2024 Task Manager, Inc</p>
+        </footer>
         <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>

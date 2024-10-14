@@ -60,21 +60,32 @@ $(document).ready(function () {
                 });
 
                 let taskElement = `
-      <div class="task-row" data-id="${task._id}">
-          <div class="col-2">${task.task_number}</div>
-          <div class="col-5">${task.task_name}</div>
-          <div class="col-3">${formattedDate}</div>
-          <div class="col-1">
-              <button class="btn btn-success btn-complete" data-id="${task._id}">
-                  <i class="fa-regular fa-circle-check"></i>
-              </button>
-          </div>
-          <div class="col-1">
-              <button class="btn btn-primary btn-edit" data-id="${task._id}" data-toggle="modal" data-target="#editTaskModal">
-                  <i class="fa-solid fa-pen"></i>
-              </button>
-          </div>
-      </div>`;
+                        <div class="task-row" data-id="${task._id}">
+                        <div class="col-2">${task.task_number}</div>
+                        <div class="col-4">${task.task_name}</div>
+                        <div class="col-2">${formattedDate}</div>
+                        <div class="col-1">
+                            <button class="btn btn-warning btn-sm btn-add-today" data-id="${task._id}">
+                                <i class="fa-solid fa-sun"></i>
+                            </button>
+                        </div>
+                        <div class="col-1">
+                            <button class="btn btn-success btn-sm btn-complete" data-id="${task._id}">
+                                <i class="fa-regular fa-circle-check"></i>
+                            </button>
+                        </div>
+                        <div class="col-1">
+                            <button class="btn btn-primary btn-sm btn-edit" data-id="${task._id}" data-toggle="modal" data-target="#editTaskModal">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                        </div>
+                        <div class="col-1">
+                            <button class="btn btn-sm btn-danger" data-id="${task._id}">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                        </div>
+      `;
 
                 // Map status to the correct group
                 let status = task.status.toLowerCase();
@@ -183,6 +194,39 @@ $(document).ready(function () {
                     due_date: currentDate,
                     status: "Completed",
                 }),
+                success: function () {
+                    loadTasks();
+                },
+            });
+        }
+    });
+    // Handle task completion
+    $(document).on("click", ".btn-add-today", function () {
+        const taskId = $(this).data("id");
+
+        if (confirm("Are you sure you add this task to today?")) {
+            $.ajax({
+                url: `/v1/task/${taskId}`,
+                type: "PUT",
+                contentType: "application/json",
+                data: JSON.stringify({
+                    due_date: new Date(),
+                }),
+                success: function () {
+                    loadTasks();
+                },
+            });
+        }
+    });
+    // Handle delete task
+    $(document).on("click", ".btn-danger", function () {
+        const taskId = $(this).data("id");
+
+        if (confirm("Are you sure you want to delete this task?")) {
+            $.ajax({
+                url: `/v1/task/${taskId}`,
+                type: "DELETE",
+                contentType: "application/json",
                 success: function () {
                     loadTasks();
                 },

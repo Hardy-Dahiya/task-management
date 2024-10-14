@@ -11,122 +11,49 @@ $(document).ready(function () {
         },
         receive: function (event, ui) {
             let taskId = ui.item.data("id");
+            let type = ui.item.data("type");
             let newStatus = ui.item.parent().attr("id").replace("-tasks", "").toLowerCase();
+            console.log(newStatus);
             switch (newStatus) {
-                case "queue":
+                case "today-todo":
                     newStatus = "Queue";
                     break;
                 case "done":
                     newStatus = "Completed";
                     break;
             }
-
             // Update task status using the API
-            $.ajax({
-                url: `/v1/todo/${taskId}`,
-                type: "PUT",
-                contentType: "application/json",
-                data: JSON.stringify({ status: newStatus }),
-                success: function (response) {
-                    console.log(response);
-                    loadTodos();
-                },
-                error: function (xhr, status, error) {
-                    console.error("Error updating task:", error);
-                },
-            });
-        },
-    });
-    // Enable sortable (drag-and-drop) within and between groups
-    $(".sortable-group").sortable({
-        connectWith: ".sortable-group",
-        placeholder: "ui-state-highlight",
-        tolerance: "pointer",
-        revert: true,
-        forcePlaceholderSize: true,
-        start: function (event, ui) {
-            ui.item.data("original-group", ui.item.parent().attr("id"));
-        },
-        receive: function (event, ui) {
-            let taskId = ui.item.data("id");
-            let newStatus = ui.item.parent().attr("id").replace("-tasks", "").toLowerCase();
-
-            switch (newStatus) {
-                case "queue":
-                    newStatus = "Queue";
-                    break;
-                case "with-me":
-                    newStatus = "With Me";
-                    break;
-                case "with-client":
-                    newStatus = "With Client";
-                    break;
-            }
-
-            // Update task status using the API
-            $.ajax({
-                url: `/v1/task/${taskId}`,
-                type: "PUT",
-                contentType: "application/json",
-                data: JSON.stringify({ status: newStatus }),
-                success: function (response) {
-                    console.log(response);
-                    loadTasks();
-                },
-                error: function (xhr, status, error) {
-                    console.error("Error updating task:", error);
-                },
-            });
-        },
-    });
-    // Load tasks marked for today
-    function loadTodayTasks() {
-        $.get("/v1/task/today", function (data) {
-            const tasks = data.data;
-            $("#with-me-tasks").empty();
-            $("#with-client-tasks").empty();
-            $("#queue-tasks").empty();
-            $("#completed-tasks-list").empty();
-            $("#today-tasks").empty();
-
-            tasks.forEach((task) => {
-                let formattedDate = new Date(task.due_date).toLocaleDateString("en-GB", {
-                    weekday: "short",
-                    day: "numeric",
-                    month: "short",
-                    year: "2-digit",
+            if (type === "todo") {
+                $.ajax({
+                    url: `/v1/todo/${taskId}`,
+                    type: "PUT",
+                    contentType: "application/json",
+                    data: JSON.stringify({ status: newStatus }),
+                    success: function (response) {
+                        console.log(response);
+                        loadTodos();
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error updating task:", error);
+                    },
                 });
-
-                let taskElement = `
-      <div class="task-row" data-id="${task._id}">
-          <div class="col-2">${task.task_number}</div>
-          <div class="col-5">${task.task_name}</div>
-          <div class="col-3">${formattedDate}</div>
-          <div class="col-1">
-              <button class="btn btn-success btn-complete-task" data-id="${task._id}">
-                  <i class="fa-regular fa-circle-check"></i>
-              </button>
-          </div>
-          <div class="col-1">
-              <button class="btn btn-primary btn-edit" data-id="${task._id}" data-toggle="modal" data-target="#editTaskModal">
-                  <i class="fa-solid fa-pen"></i>
-              </button>
-          </div>
-      </div>`;
-                // Map status to the correct group
-                let status = task.status.toLowerCase();
-                if (status === "with me") {
-                    $("#with-me-tasks").append(taskElement);
-                } else if (status === "with client") {
-                    $("#with-client-tasks").append(taskElement);
-                } else if (status === "queue") {
-                    $("#queue-tasks").append(taskElement);
-                } else if (status === "completed") {
-                    $("#completed-tasks-list").append(taskElement);
-                }
-            });
-        });
-    }
+            } else if (type === "task") {
+                $.ajax({
+                    url: `/v1/task/${taskId}`,
+                    type: "PUT",
+                    contentType: "application/json",
+                    data: JSON.stringify({ status: newStatus, due_date: new Date() }),
+                    success: function (response) {
+                        console.log(response);
+                        loadTodos();
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error updating task:", error);
+                    },
+                });
+            }
+        },
+    });
 
     // Load todos
     function loadTodos() {
@@ -135,29 +62,53 @@ $(document).ready(function () {
             $("#today-todo").empty();
             $("#done-tasks").empty();
             todos.forEach((todo) => {
-                let formattedDate = new Date(todo.createdAt).toLocaleDateString("en-GB", {
+                let formattedDate = new Date(todo.due_date).toLocaleDateString("en-GB", {
                     weekday: "short",
                     day: "numeric",
                     month: "short",
                     year: "2-digit",
                 });
 
-                let taskElement = `
-      <div class="task-row" data-id="${todo._id}">
-          <div class="col-2">${todo.todo_id}</div>
-          <div class="col-5">${todo.todo_name}</div>
-          <div class="col-3">${formattedDate}</div>
-          <div class="col-1">
-              <button class="btn btn-success btn-complete-todo" data-id="${todo._id}">
-                  <i class="fa-regular fa-circle-check"></i>
-              </button>
-          </div>
-          <div class="col-1">
-              <button class="btn btn-primary btn-edit" data-id="${todo._id}" data-toggle="modal" data-target="#editTodoModal">
-                  <i class="fa-solid fa-pen"></i>
-              </button>
-          </div>
+                let taskElement = ``;
+                if (todo.type === "todo") {
+                    taskElement = `
+      <div class="task-row" data-id="${todo._id}" data-type="${todo.type}">
+          <div class="col-9">${todo.todo_name}</div>
+                                 <div class="col-1">
+                            <button class="btn btn-success btn-sm btn-complete-todo" data-id="${todo._id}" data-type="${todo.type}">
+                                <i class="fa-regular fa-circle-check"></i>
+                            </button>
+                        </div>
+                        <div class="col-1">
+                            <button class="btn btn-primary btn-sm btn-edit" data-id="${todo._id}" data-toggle="modal" data-target="#editTodoModal">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                        </div>
+                        <div class="col-1">
+                            <button class="btn btn-sm btn-danger" data-id="${todo._id}" data-type="${todo.type}">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
       </div>`;
+                } else if (todo.type === "task") {
+                    taskElement = `
+                        <div class="task-row" data-id="${todo._id}" data-type="${todo.type}">
+                        <div class="col-2">${todo.task_number}</div>
+                        <div class="col-4">${todo.task_name}</div>
+                        <div class="col-4">${formattedDate}</div>
+                        <div class="col-1">
+                            <button class="btn btn-success btn-sm btn-complete-todo" data-id="${todo._id}" data-type="${todo.type}">
+                                <i class="fa-regular fa-circle-check"></i>
+                            </button>
+                        </div>
+                        <div class="col-1">
+                            <button class="btn btn-sm btn-danger" data-id="${todo._id}" data-type="${todo.type}">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                        </div>
+      `;
+                }
                 if (todo.completed) {
                     $("#done-tasks").append(taskElement);
                 } else {
@@ -344,37 +295,13 @@ $(document).ready(function () {
     });
 
     // Handle task completion
-    $(document).on("click", ".btn-complete-task", function () {
-        const taskId = $(this).data("id");
-
-        if (confirm("Are you sure you want to mark this task as completed?")) {
-            const currentDate = new Date().toISOString().split("T")[0];
-
-            $.ajax({
-                url: `/v1/task/${taskId}`,
-                type: "PUT",
-                contentType: "application/json",
-                data: JSON.stringify({
-                    completed: true,
-                    due_date: currentDate,
-                    status: "Completed",
-                }),
-                success: function () {
-                    loadTodayTasks();
-                },
-            });
-        }
-    });
-
-    // Handle task completion
     $(document).on("click", ".btn-complete-todo", function () {
         const taskId = $(this).data("id");
-
-        if (confirm("Are you sure you want to mark this todo as completed?")) {
+        const type = $(this).data("type");
+        if (confirm(`Are you sure you want to mark this ${type} as completed?`)) {
             const currentDate = new Date().toISOString().split("T")[0];
-
             $.ajax({
-                url: `/v1/todo/${taskId}`,
+                url: `/v1/${type}/${taskId}`,
                 type: "PUT",
                 contentType: "application/json",
                 data: JSON.stringify({
@@ -388,13 +315,27 @@ $(document).ready(function () {
             });
         }
     });
+    // Handle delete task
+    $(document).on("click", ".btn-danger", function () {
+        const taskId = $(this).data("id");
+        const type = $(this).data("type");
+        if (confirm(`Are you sure you want to delete this ${type}?`)) {
+            $.ajax({
+                url: `/v1/${type}/${taskId}`,
+                type: "DELETE",
+                contentType: "application/json",
+                success: function () {
+                    loadTodos();
+                },
+            });
+        }
+    });
     // Show completed tasks modal
     $("#show-completed").click(function () {
         $("#completedModal").modal("show");
-        loadTodayTasks(); // Load only completed tasks inside the modal
+        loadTodos(); // Load only completed tasks inside the modal
     });
 
     // Load initial tasks for today
-    loadTodayTasks();
     loadTodos();
 });

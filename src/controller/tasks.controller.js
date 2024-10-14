@@ -100,7 +100,7 @@ const updateTask = async (req, res) => {
                 task_number: task_number,
                 due_date: due_date,
                 status: status,
-                completed: completed,
+                completed: status === "Completed" ? true : false,
             },
             { new: true },
         );

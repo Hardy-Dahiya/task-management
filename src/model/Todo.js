@@ -5,7 +5,7 @@ const todoSchema = new mongoose.Schema(
     {
         todo_id: { type: Number }, // Auto-increment field
         todo_name: { type: String, required: true },
-        due_date: { type: Date, required: false },
+        due_date: { type: Date, required: false, default: new Date() },
         completed: { type: Boolean, default: false },
         status: {
             type: String,

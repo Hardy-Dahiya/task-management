@@ -1,5 +1,6 @@
 const { logger } = require("../../logger");
 const Todo = require("../model/Todo");
+const Task = require("../model/Task");
 
 // Create a new todo
 const createTodo = async (req, res) => {
@@ -21,20 +22,30 @@ const createTodo = async (req, res) => {
         return res.status(500).send({ status: false, message: error.message });
     }
 };
-
-// Get all todos
+// Get all todos and tasks
 const getTodos = async (req, res) => {
     try {
-        const { completed } = req.query; // Get the completed status from query
+        // Get the current date (without the time) for comparison
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0); // Set the time to the start of the day (00:00:00)
 
-        // Build the query based on whether completed is specified
-        const query = {};
-        if (completed) {
-            query.completed = completed === "true"; // Convert to boolean
-        }
+        const endOfDay = new Date();
+        endOfDay.setHours(23, 59, 59, 999); // Set the time to the end of the day (23:59:59)
 
-        const todos = await Todo.find(query); // Fetch tasks based on the query
-        return res.send({ status: true, data: todos });
+        // Build the query for today based on createdAt range
+        const query = { due_date: { $gte: startOfDay, $lte: endOfDay } };
+
+        const todos = await Todo.find(query); // Fetch todos based on the query
+        const tasks = await Task.find(query); // Fetch tasks based on the query
+
+        // Add type 'todo' for todos and type 'task' for tasks
+        const todosWithType = todos.map((todo) => ({ ...todo.toObject(), type: "todo" }));
+        const tasksWithType = tasks.map((task) => ({ ...task.toObject(), type: "task" }));
+
+        // Combine todos and tasks
+        const allItems = [...todosWithType, ...tasksWithType];
+
+        return res.send({ status: true, data: allItems });
     } catch (error) {
         logger.error(error);
         return res.status(500).send({ status: false, message: error.message });
